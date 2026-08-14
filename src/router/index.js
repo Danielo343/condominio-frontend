@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import ResidentesView from '@/views/ResidentesView.vue'
+import FacturacionView from '@/views/FacturacionView.vue'
 import ChatView from '@/views/ChatView.vue'
 import DocumentosView from '@/views/DocumentosView.vue'
 import ConfiguracionView from '@/views/ConfiguracionView.vue'
@@ -29,6 +30,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/facturacion',
+    name: 'facturacion',
+    component: FacturacionView,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/chat',
     name: 'chat',
     component: ChatView,
@@ -53,7 +60,6 @@ const router = createRouter({
   routes
 })
 
-// Middleware de navegación (Formato Vue Router v4 sin 'next' deprecado)
 router.beforeEach((to) => {
   const token = localStorage.getItem('token')
   if (to.meta.requiresAuth && !token) {

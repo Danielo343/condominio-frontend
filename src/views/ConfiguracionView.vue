@@ -8,10 +8,10 @@
       <main class="p-6 md:p-8 space-y-6 max-w-5xl">
         <div>
           <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Configuración</h1>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Administra los parámetros de tu cuenta y del condominio</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Parámetros operativos del condominio y seguridad de cuenta</p>
         </div>
 
-        <!-- Pestañas de Navegación -->
+        <!-- Pestañas -->
         <div class="flex border-b border-slate-200 dark:border-slate-800 gap-6 text-sm font-medium">
           <button
             v-if="esAdmin"
@@ -43,8 +43,12 @@
         </div>
 
         <!-- TAB 1: CONDOMINIO (SOLO ADMIN) -->
-        <div v-if="tabActiva === 'condominio' && esAdmin" class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 space-y-4 shadow-sm transition-colors">
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Información del Condominio</h2>
+        <div v-if="tabActiva === 'condominio' && esAdmin" class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 space-y-6 shadow-sm">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Información y Capacidad del Condominio</h2>
+            <p class="text-xs text-slate-400">Define los parámetros que utilizará el panel de control y facturación.</p>
+          </div>
+
           <form @submit.prevent="guardarCondominio" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -56,26 +60,52 @@
                 <input v-model="formCondominio.direccion" required type="text" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100" />
               </div>
               <div>
-                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Administrador</label>
-                <input v-model="formCondominio.administrador" required type="text" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Teléfono</label>
-                <input v-model="formCondominio.telefono" required type="text" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100" />
+                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Capacidad Total de Unidades (Plazas)</label>
+                <input v-model="formCondominio.capacidad_total" required type="number" min="1" max="1000" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Cuota de Mantenimiento ($)</label>
                 <input v-model="formCondominio.cuota_mantenimiento" required type="number" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100" />
               </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Día Límite de Pago Mensual</label>
+                <input v-model="formCondominio.dia_corte" required type="number" min="1" max="31" placeholder="Ej. 10" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Teléfono del Administrador</label>
+                <input v-model="formCondominio.telefono" required type="text" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100" />
+              </div>
             </div>
-            <button type="submit" :disabled="guardando" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-purple-600/20 transition-all">
-              {{ guardando ? 'Guardando...' : 'Guardar Parámetros' }}
-            </button>
+
+            <!-- Datos Bancarios -->
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-700/60 space-y-3">
+              <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Datos Bancarios para Recibir Pagos</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Banco</label>
+                  <input v-model="formCondominio.banco" placeholder="BBVA" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">CLABE Interbancaria</label>
+                  <input v-model="formCondominio.clabe_interbancaria" placeholder="18 dígitos" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 font-mono" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Beneficiario</label>
+                  <input v-model="formCondominio.beneficiario" placeholder="Condominio Los Pinos AC" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100" />
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-3">
+              <button type="submit" :disabled="guardando" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-purple-600/20 transition-all">
+                {{ guardando ? 'Guardando...' : 'Guardar Parámetros' }}
+              </button>
+            </div>
           </form>
         </div>
 
         <!-- TAB 2: MI PERFIL -->
-        <div v-if="tabActiva === 'perfil'" class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 space-y-4 shadow-sm transition-colors">
+        <div v-if="tabActiva === 'perfil'" class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 space-y-4 shadow-sm">
           <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Información Personal</h2>
           <form @submit.prevent="guardarPerfil" class="space-y-4 max-w-md">
             <div>
@@ -92,11 +122,11 @@
           </form>
         </div>
 
-        <!-- TAB 3: SEGURIDAD & MULTISESIONES -->
-        <div v-if="tabActiva === 'seguridad'" class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 space-y-4 shadow-sm transition-colors">
+        <!-- TAB 3: SEGURIDAD -->
+        <div v-if="tabActiva === 'seguridad'" class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 space-y-4 shadow-sm">
           <h2 class="text-lg font-bold text-slate-900 dark:text-white">Cambio de Contraseña</h2>
           <p class="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-3 rounded-xl">
-            ⚠️ Al cambiar tu contraseña se cerrará la sesión en todos los demás dispositivos por seguridad.
+            ⚠️ Al cambiar tu contraseña se cerrará la sesión en todos los demás dispositivos.
           </p>
 
           <form @submit.prevent="cambiarPassword" class="space-y-4 max-w-md">
@@ -142,7 +172,12 @@ const formCondominio = ref({
   direccion: '',
   administrador: '',
   telefono: '',
-  cuota_mantenimiento: 0,
+  cuota_mantenimiento: 1500,
+  capacidad_total: 50,
+  dia_corte: 10,
+  banco: 'BBVA',
+  clabe_interbancaria: '',
+  beneficiario: '',
   moneda: 'MXN'
 })
 
@@ -151,10 +186,9 @@ const formSeguridad = ref({ current_password: '', new_password: '', new_password
 
 const cargarDatos = async () => {
   try {
-    if (esAdmin.value) {
-      const resConfig = await api.get('/configuracion')
-      formCondominio.value = resConfig.data.data
-    }
+    const resConfig = await api.get('/configuracion')
+    formCondominio.value = resConfig.data.data
+
     const resUser = await api.get('/user')
     formPerfil.value = { name: resUser.data.user.name, email: resUser.data.user.email }
   } catch (err) {

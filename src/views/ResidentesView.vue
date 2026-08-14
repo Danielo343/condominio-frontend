@@ -58,7 +58,7 @@
               <div class="min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
                   <h3 class="font-semibold text-slate-900 dark:text-slate-100 truncate text-base">{{ residente.nombre }}</h3>
-                  <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50">
+                  <span class="text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50">
                     {{ residente.unidad }}
                   </span>
                   <span
@@ -71,7 +71,7 @@
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-1">
                   <span class="truncate">{{ residente.email }}</span>
                   <span class="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
-                  <span>{{ residente.telefono }}</span>
+                  <span>{{ formatearTelefono(residente.telefono) }}</span>
                 </div>
               </div>
             </div>
@@ -102,7 +102,7 @@
       </main>
     </div>
 
-    <!-- Modal Form (Crear / Editar) -->
+    <!-- Modal Form Estandarizado -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
       enter-from-class="opacity-0 scale-95"
@@ -124,34 +124,72 @@
             </button>
           </div>
 
+          <div v-if="errorFormulario" class="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 rounded-xl text-xs font-semibold">
+            {{ errorFormulario }}
+          </div>
+
           <form @submit.prevent="guardarResidente" class="space-y-4">
             <div>
-              <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Nombre Completo</label>
-              <input v-model="formulario.nombre" required type="text" placeholder="Ej. Ana Pérez" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-purple-500" />
+              <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Nombre y Apellido</label>
+              <input v-model="formulario.nombre" required type="text" placeholder="Ej. Ana Pérez García" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-purple-500" />
+            </div>
+
+            <!-- Sección de Departamento Estandarizada -->
+            <div class="space-y-1.5 p-3.5 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/40 rounded-2xl">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold uppercase text-purple-700 dark:text-purple-300 mb-1">Torre / Edificio</label>
+                  <select v-model="formulario.torre" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-purple-500">
+                    <option value="Torre A">Torre A</option>
+                    <option value="Torre B">Torre B</option>
+                    <option value="Torre C">Torre C</option>
+                    <option value="Torre D">Torre D</option>
+                    <option value="Sector Casas">Sector Casas</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-purple-700 dark:text-purple-300 mb-1">Número de Depto</label>
+                  <input
+                    v-model="formulario.numeroDepto"
+                    @input="sanitizarDepto"
+                    maxlength="4"
+                    required
+                    type="text"
+                    placeholder="101"
+                    class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+              <p class="text-[11px] text-purple-700 dark:text-purple-300 font-semibold pt-1">
+                📌 Identificador final: <span class="underline font-bold">{{ formulario.torre }} - Depto {{ formulario.numeroDepto || '___' }}</span>
+              </p>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Unidad / Depto</label>
-                <input v-model="formulario.unidad" required type="text" placeholder="Ej. Depto 204" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-purple-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Rol en el Sistema</label>
+                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Rol</label>
                 <select v-model="formulario.rol" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-purple-500">
                   <option value="Residente">Residente</option>
                   <option value="Administrador">Administrador</option>
                 </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Teléfono (10 Dígitos)</label>
+                <input
+                  v-model="formulario.telefono"
+                  @input="sanitizarTelefono"
+                  maxlength="10"
+                  required
+                  type="tel"
+                  placeholder="3312345678"
+                  class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:border-purple-500"
+                />
               </div>
             </div>
 
             <div>
               <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Correo Electrónico</label>
               <input v-model="formulario.email" required type="email" placeholder="usuario@email.com" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-purple-500" />
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Teléfono</label>
-              <input v-model="formulario.telefono" required type="text" placeholder="3312345678" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-purple-500" />
             </div>
 
             <div v-if="!modoEdicion">
@@ -186,6 +224,7 @@ const residentes = ref([])
 const busqueda = ref('')
 const cargando = ref(false)
 const guardando = ref(false)
+const errorFormulario = ref('')
 
 const mostrarModal = ref(false)
 const modoEdicion = ref(false)
@@ -193,12 +232,27 @@ const idEdicion = ref(null)
 
 const formulario = ref({
   nombre: '',
+  torre: 'Torre A',
+  numeroDepto: '',
   unidad: '',
   email: '',
   telefono: '',
   rol: 'Residente',
   password: 'Condo1234'
 })
+
+const sanitizarTelefono = (e) => {
+  formulario.value.telefono = e.target.value.replace(/\D/g, '').slice(0, 10)
+}
+
+const sanitizarDepto = (e) => {
+  formulario.value.numeroDepto = e.target.value.replace(/\D/g, '').slice(0, 4)
+}
+
+const formatearTelefono = (tel) => {
+  if (!tel || tel.length !== 10) return tel || 'Sin teléfono'
+  return `${tel.slice(0, 3)}-${tel.slice(3, 6)}-${tel.slice(6)}`
+}
 
 const obtenerIniciales = (nombre) => {
   if (!nombre) return 'R'
@@ -222,15 +276,41 @@ const obtenerResidentes = async () => {
 const abrirModalCrear = () => {
   modoEdicion.value = false
   idEdicion.value = null
-  formulario.value = { nombre: '', unidad: '', email: '', telefono: '', rol: 'Residente', password: 'Condo1234' }
+  errorFormulario.value = ''
+  formulario.value = {
+    nombre: '',
+    torre: 'Torre A',
+    numeroDepto: '',
+    unidad: '',
+    email: '',
+    telefono: '',
+    rol: 'Residente',
+    password: 'Condo1234'
+  }
   mostrarModal.value = true
 }
 
 const abrirModalEditar = (residente) => {
   modoEdicion.value = true
   idEdicion.value = residente._id || residente.id
+  errorFormulario.value = ''
+
+  // Desglosar la unidad existente (ej. "Torre B - Depto 204")
+  let torreDetectada = 'Torre A'
+  let numeroDetectado = ''
+
+  if (residente.unidad && residente.unidad.includes(' - ')) {
+    const partes = residente.unidad.split(' - ')
+    torreDetectada = partes[0]
+    numeroDetectado = partes.replace(/\D/g, '')
+  } else if (residente.unidad) {
+    numeroDetectado = residente.unidad.replace(/\D/g, '')
+  }
+
   formulario.value = {
     nombre: residente.nombre,
+    torre: torreDetectada,
+    numeroDepto: numeroDetectado,
     unidad: residente.unidad,
     email: residente.email,
     telefono: residente.telefono,
@@ -244,6 +324,27 @@ const cerrarModal = () => {
 }
 
 const guardarResidente = async () => {
+  errorFormulario.value = ''
+
+  const palabras = formulario.value.nombre.trim().split(/\s+/)
+  if (palabras.length < 2) {
+    errorFormulario.value = 'Debes ingresar al menos un nombre y un apellido.'
+    return
+  }
+
+  if (!formulario.value.numeroDepto || formulario.value.numeroDepto.length < 2) {
+    errorFormulario.value = 'Ingresa un número de departamento válido (ej. 101, 204).'
+    return
+  }
+
+  if (formulario.value.telefono.length !== 10) {
+    errorFormulario.value = 'El número de teléfono debe tener exactamente 10 dígitos.'
+    return
+  }
+
+  // Generar la unidad estandarizada
+  formulario.value.unidad = `${formulario.value.torre} - Depto ${formulario.value.numeroDepto}`
+
   guardando.value = true
   try {
     if (modoEdicion.value) {
@@ -254,7 +355,7 @@ const guardarResidente = async () => {
     cerrarModal()
     await obtenerResidentes()
   } catch (error) {
-    console.error('Error al guardar:', error)
+    errorFormulario.value = error.response?.data?.message || 'Error al guardar.'
   } finally {
     guardando.value = false
   }

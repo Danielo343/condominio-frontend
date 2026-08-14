@@ -29,6 +29,16 @@
         <span>Residentes</span>
       </RouterLink>
 
+      <!-- Nuevo enlace a Finanzas / Facturación -->
+      <RouterLink
+        to="/facturacion"
+        active-class="bg-purple-600 text-white shadow-lg shadow-purple-600/20"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
+      >
+        <span>💳</span>
+        <span>Finanzas & Pagos</span>
+      </RouterLink>
+
       <RouterLink
         to="/chat"
         active-class="bg-purple-600 text-white shadow-lg shadow-purple-600/20"

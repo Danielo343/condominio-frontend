@@ -37,7 +37,16 @@
             class="max-w-md p-4 space-y-1"
           >
             <div class="flex items-center justify-between gap-4 text-[11px] font-semibold opacity-75">
-              <span>{{ msg.nombre_usuario }}</span>
+              <div class="flex items-center gap-1.5">
+                <span>{{ msg.nombre_usuario }}</span>
+                <!-- Insignia si el usuario fue eliminado -->
+                <span
+                  v-if="msg.antiguo"
+                  class="text-[9px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-700/80 px-1.5 py-0.2 rounded italic border border-slate-300 dark:border-slate-600"
+                >
+                  Antiguo Residente
+                </span>
+              </div>
               <span class="text-[10px] font-normal opacity-60">{{ msg.hora }}</span>
             </div>
             <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ msg.mensaje }}</p>
