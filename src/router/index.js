@@ -1,18 +1,50 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import LoginView from '@/views/LoginView.vue'
+import DashboardView from '@/views/DashboardView.vue'
+import ResidentesView from '@/views/ResidentesView.vue'
+import ChatView from '@/views/ChatView.vue'
+import DocumentosView from '@/views/DocumentosView.vue'
+import ConfiguracionView from '@/views/ConfiguracionView.vue'
 
 const routes = [
   {
-    path: '/login',
-    name: 'login',
-    component: () => import('../views/LoginView.vue'),
-    meta: { requiereAnonimo: true }
+    path: '/',
+    redirect: '/dashboard'
   },
   {
-    path: '/',
+    path: '/login',
+    name: 'login',
+    component: LoginView
+  },
+  {
+    path: '/dashboard',
     name: 'dashboard',
-    component: () => import('../views/DashboardView.vue'),
-    meta: { requiereAutenticacion: true }
+    component: DashboardView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/residentes',
+    name: 'residentes',
+    component: ResidentesView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/chat',
+    name: 'chat',
+    component: ChatView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/documentos',
+    name: 'documentos',
+    component: DocumentosView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/configuracion',
+    name: 'configuracion',
+    component: ConfiguracionView,
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -21,15 +53,11 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-
-  if (to.meta.requiereAutenticacion && !authStore.estaAutenticado) {
-    next({ name: 'login' })
-  } else if (to.meta.requiereAnonimo && authStore.estaAutenticado) {
-    next({ name: 'dashboard' })
-  } else {
-    next()
+// Middleware de navegación (Formato Vue Router v4 sin 'next' deprecado)
+router.beforeEach((to) => {
+  const token = localStorage.getItem('token')
+  if (to.meta.requiresAuth && !token) {
+    return '/login'
   }
 })
 

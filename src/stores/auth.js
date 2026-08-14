@@ -1,47 +1,34 @@
 import { defineStore } from 'pinia'
-import api from '../services/api'
+import { ref } from 'vue'
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    usuario: JSON.parse(localStorage.getItem('usuario')) || null,
-    token: localStorage.getItem('token') || '',
-  }),
-  getters: {
-    estaAutenticado: (state) => !!state.token,
-    esAdmin: (state) => state.usuario?.role === 'admin',
-  },
-  actions: {
-    async login(credenciales) {
-      const respuesta = await api.post('/login', credenciales)
-      this.token = respuesta.data.token
-      this.usuario = respuesta.data.usuario
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref(localStorage.getItem('token') || null)
+  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
 
-      localStorage.setItem('token', this.token)
-      localStorage.setItem('usuario', JSON.stringify(this.usuario))
-      return respuesta.data
-    },
+  const setToken = (newToken) => {
+    token.value = newToken
+    if (newToken) {
+      localStorage.setItem('token', newToken)
+    } else {
+      localStorage.removeItem('token')
+    }
+  }
 
-    async registro(datos) {
-      const respuesta = await api.post('/registro', datos)
-      this.token = respuesta.data.token
-      this.usuario = respuesta.data.usuario
+  const setUser = (newUser) => {
+    user.value = newUser
+    if (newUser) {
+      localStorage.setItem('user', JSON.stringify(newUser))
+    } else {
+      localStorage.removeItem('user')
+    }
+  }
 
-      localStorage.setItem('token', this.token)
-      localStorage.setItem('usuario', JSON.stringify(this.usuario))
-      return respuesta.data
-    },
+  const logout = () => {
+    token.value = null
+    user.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+  }
 
-    async logout() {
-      try {
-        await api.post('/logout')
-      } catch (error) {
-        console.error('Error al cerrar sesión:', error)
-      } finally {
-        this.token = ''
-        this.usuario = null
-        localStorage.removeItem('token')
-        localStorage.removeItem('usuario')
-      }
-    },
-  },
+  return { token, user, setToken, setUser, logout }
 })
